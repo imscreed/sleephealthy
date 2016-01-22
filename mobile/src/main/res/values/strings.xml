@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Sleep Healthy</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Survey</string>
+    <string name="title_activity_question">Questionnaire</string>
+</resources>
