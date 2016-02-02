@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private GoogleApiClient mGoogleApiClient;
     private TextView resultview;
     private String resultstr;
+    private int count = 0;
 
     NotificationCompat.Builder mBuilder;
 
@@ -131,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle("Apnea episode detected")
-                        .setContentText("Your heart rate is increasing abnormally" + getFormattedTime());
+                        .setContentText("Your heart rate is increasing abnormally " + getFormattedTime());
 
     }
 
@@ -196,10 +197,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 sensordataArray = dataMap.getFloatArray("sensordata");
                 if(sensordataArray[4] > 90){
                     //start timer if needed before sending the notification
-                    int mNotificationId = 001;
-                    NotificationManager mNotifyMgr =
-                            (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
+                    //Using count instead of timer for now
+                    count++;
+                    if(count > 22){
+                        int mNotificationId = 001;
+                        NotificationManager mNotifyMgr =
+                                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+                        count = 0;
+                    }
                 }
                 resultstr = "Detecting Movement: Using Accelerometer Sensor"
                         + "\nX:" + sensordataArray[0]
@@ -227,10 +233,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                         myOutWriter2.close();
                                         fOut2.close();
                                     } catch (IOException e) {
-                                        // TODO Auto-generated catch block
                                         e.printStackTrace();
                                     } catch (NullPointerException e) {
-                                        // TODO Auto-generated catch block
                                         e.printStackTrace();
                                     }
                                 }
