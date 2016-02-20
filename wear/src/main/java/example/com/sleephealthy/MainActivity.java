@@ -58,7 +58,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
         _handler = new Handler();
 
-        _handler.postDelayed(new Runnable() {//Timer的な
+        _handler.postDelayed(new Runnable() {
             @Override
             public void run() {
 
@@ -116,7 +116,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             }
         }
         mGoogleApiClient.connect();
-
     }
 
     private void updateDisplay() {

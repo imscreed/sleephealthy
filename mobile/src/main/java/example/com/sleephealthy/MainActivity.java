@@ -1,7 +1,9 @@
 package example.com.sleephealthy;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.media.MediaRecorder;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private GoogleApiClient mGoogleApiClient;
     private TextView resultview;
     private String resultstr;
+    private MediaRecorder myAudioRecorder;
+    private String outputFile = null;
     private int count = 0;
 
     NotificationCompat.Builder mBuilder;
@@ -66,11 +70,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     float sensordataArray[];
     private ProgressBar progressBar;
+    private boolean audioFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Intent intent = getIntent();
+        final String mode = intent.getStringExtra(homeScreen.EXTRA_MESSAGE);
+        Log.i("Received Intent Message", mode);
         resultview = (TextView) findViewById(R.id.resulttxtview);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
@@ -78,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         resultstr="";
 
         startButton = (Button) findViewById(R.id.startButton);
+
         startButton.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
@@ -100,7 +109,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     myBufferedWriter2 = new BufferedWriter(myOutWriter2);
                     myPrintWriter2 = new PrintWriter(myBufferedWriter2);
 
-                    Toast.makeText(getBaseContext(), "Started recording the data sets", Toast.LENGTH_SHORT).show();
+                    outputFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + File.separator + System.currentTimeMillis() + "SLEEPSOUND.3gp";
+
+                    myAudioRecorder = new MediaRecorder();
+                    myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                    myAudioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                    myAudioRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+                    myAudioRecorder.setOutputFile(outputFile);
+
+                    if(mode.equalsIgnoreCase("SLEEP")){
+                        audioFlag = true;
+                        myAudioRecorder.prepare();
+                        myAudioRecorder.start();
+                        Log.i("Audio Recording status", "started");
+                    }
+
+                    Toast.makeText(getBaseContext(), "Started recording the data sets and audio", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 } finally {
@@ -120,6 +144,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // stop recording the sensor data
                 try {
                     stopFlag = true;
+                    if(audioFlag){
+                        audioFlag = false;
+                        myAudioRecorder.stop();
+                        myAudioRecorder.release();
+                        myAudioRecorder  = null;
+                        Log.i("Audio Recording status", "stopped");
+                    }
                     Toast.makeText(getBaseContext(), "Done recording the data sets", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -132,7 +163,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle("Apnea episode detected")
-                        .setContentText("Your heart rate is increasing abnormally " + getFormattedTime());
+                        .setDefaults(Notification.DEFAULT_ALL)
+        .setContentText("Your heart rate is increasing abnormally " + getFormattedTime());
 
     }
 
